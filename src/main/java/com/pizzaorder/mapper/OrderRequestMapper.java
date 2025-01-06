@@ -1,7 +1,6 @@
 package com.pizzaorder.mapper;
 
 import com.pizzaorder.dto.request.OrderRequestDto;
-import com.pizzaorder.dto.response.OrderResponseDto;
 import com.pizzaorder.model.OrderEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;

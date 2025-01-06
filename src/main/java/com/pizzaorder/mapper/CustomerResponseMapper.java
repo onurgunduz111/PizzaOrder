@@ -7,7 +7,6 @@ import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
 
-
 @Mapper(componentModel = "spring", uses = {}, unmappedTargetPolicy = ReportingPolicy.WARN)
 public interface CustomerResponseMapper {
     List<CustomerResponseDto> getDtoListFromEntityList(List<CustomerEntity> customer);

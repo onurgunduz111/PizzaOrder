@@ -19,7 +19,6 @@ public class PizzaController { // Response Entity, Global Exception Handling, Ma
 
     private PizzaService pizzaService;
 
-
     @RequestMapping(value = "/pizza/", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<PizzaResponseDto> listALLPizzas() {
         return pizzaService.listAllPizzas();

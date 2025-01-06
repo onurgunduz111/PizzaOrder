@@ -1,50 +1,75 @@
 package integration;
 
-import com.pizzaorder.Application;
 import com.pizzaorder.dto.OrderPizzaDto;
+import com.pizzaorder.dto.response.CustomerResponseDto;
+import com.pizzaorder.dto.response.OrderResponseDto;
+import com.pizzaorder.dto.response.PizzaResponseDto;
 import io.restassured.RestAssured;
+import io.restassured.mapper.ObjectMapperType;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
 
 import java.util.*;
 
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
+public class OrderControllerIT  extends BaseIT{
 
-@SpringBootTest(classes = Application.class,webEnvironment = RANDOM_PORT)
-public class OrderControllerIT {
-    @LocalServerPort
-    private Integer port;
-
-
-    @BeforeEach
-    void setUp() {
-        RestAssured.port = port;
-        RestAssured.baseURI = "http://localhost/api/";
-    }
 
     @Test
     public void givenOrderURIthenVerifyCreateOrderRespone() {
-        List<OrderPizzaDto> orderPizzaDtoList = new ArrayList<OrderPizzaDto>();
-        orderPizzaDtoList.add(new OrderPizzaDto(UUID.fromString("d844062f-1669-4c0c-ae5e-91d47f9e5280"),2));
+        CustomerResponseDto customerResponseBody = getCustomerResponseDto();
+        PizzaResponseDto pizzaResponseBody = getPizzaResponseDto();
 
-        Map<String, Object> requestBody = new HashMap<String, Object>();
-        requestBody.put("customerId", "048efa83-ccab-4e44-b571-761ebcfb0545");
-        requestBody.put("orderPizzas", orderPizzaDtoList);
+        Map<String, Object> orderRequestBody = new HashMap<String, Object>();
+        orderRequestBody.put("customerId", customerResponseBody.id());
+        orderRequestBody.put("orderPizzas", List.of(new OrderPizzaDto(pizzaResponseBody.id(), 2)));
 
-        String responseBody = RestAssured.given()
+        OrderResponseDto orderResponseBody = RestAssured.given()
                 .contentType("application/json")
-                .body(requestBody)
+                .body(orderRequestBody)
                 .when()
                 .post("/order/")
                 .then()
                 .statusCode(200)
                 .extract()
                 .body()
-                .asString();
+                .as(OrderResponseDto.class, ObjectMapperType.GSON);
 
-        Assertions.assertTrue(responseBody.contains("id"));
+        Assertions.assertNotNull(orderResponseBody.id());
+        Assertions.assertEquals(2,  orderResponseBody.orderPizzas().get(0).amount());
+        Assertions.assertNotNull(orderResponseBody.orderPizzas().get(0).pizzaId());
+    }
+
+    private PizzaResponseDto getPizzaResponseDto() {
+        Map<String, Object> requestBodyPizza = new HashMap<String, Object>();
+        requestBodyPizza.put("name", "Mozeralla");
+        requestBodyPizza.put("price", 1.25);
+
+        return RestAssured.given()
+                .contentType("application/json")
+                .body(requestBodyPizza)
+                .when()
+                .post("/pizza/")
+                .then()
+                .statusCode(200)
+                .extract()
+                .body()
+                .as(PizzaResponseDto.class, ObjectMapperType.GSON);
+    }
+
+    private CustomerResponseDto getCustomerResponseDto() {
+        Map<String, Object> customerRequestBody = new HashMap<String, Object>();
+        customerRequestBody.put("name", "Jane Doe");
+        customerRequestBody.put("address", "This street that street");
+
+        return RestAssured.given()
+                .contentType("application/json")
+                .body(customerRequestBody)
+                .when()
+                .post("/customer/")
+                .then()
+                .statusCode(200)
+                .extract()
+                .body()
+                .as(CustomerResponseDto.class, ObjectMapperType.GSON);
     }
 }

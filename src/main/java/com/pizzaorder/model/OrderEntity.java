@@ -21,9 +21,6 @@ public class OrderEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    /*@Column(nullable = false)
-    private UUID customerId;*/
-
     @ManyToOne(cascade = CascadeType.ALL, optional = false)
     @JoinColumn(name = "customerId")
     private CustomerEntity customerEntity;

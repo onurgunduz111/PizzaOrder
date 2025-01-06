@@ -1,31 +1,15 @@
 package integration;
 
-import com.pizzaorder.Application;
-import io.restassured.RestAssured;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
 
+import com.pizzaorder.dto.response.CustomerResponseDto;
+import io.restassured.RestAssured;
+import io.restassured.mapper.ObjectMapperType;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
-
-
-@SpringBootTest(classes = Application.class,webEnvironment = RANDOM_PORT)
-public class CustomerControllerIT {
-
-    @LocalServerPort
-    private Integer port;
-
-
-    @BeforeEach
-    void setUp() {
-        RestAssured.port = port;
-        RestAssured.baseURI = "http://localhost/api/";
-    }
+public class CustomerControllerIT extends BaseIT {
 
     @Test
     public void givenCustomerURIthenVerifyResponse() {
@@ -40,7 +24,7 @@ public class CustomerControllerIT {
         requestBody.put("name", "Jane Doe");
         requestBody.put("address", "This street that street");
 
-        String responseBody = RestAssured.given()
+        CustomerResponseDto customerResponseBody = RestAssured.given()
                 .contentType("application/json")
                 .body(requestBody)
                 .when()
@@ -49,8 +33,10 @@ public class CustomerControllerIT {
                 .statusCode(200)
                 .extract()
                 .body()
-                .asString();
+                .as(CustomerResponseDto.class, ObjectMapperType.GSON);
 
-        Assertions.assertTrue(responseBody.contains("id"));
+        Assertions.assertNotNull(customerResponseBody.id());
+        Assertions.assertEquals("Jane Doe",customerResponseBody.name());
+        Assertions.assertEquals("This street that street",customerResponseBody.address());
     }
 }
